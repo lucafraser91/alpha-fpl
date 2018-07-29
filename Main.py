@@ -2,3 +2,4 @@
 print("go go go")
 # offline#
 a = 666
+b=777
