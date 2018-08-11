@@ -1,4 +1,5 @@
 from FPLDataFunctions import *
+from colorama import Fore, Style
 
 static_team_weight = {1: 0.876906824541861,
                       2: 1.07534128246658,
@@ -24,27 +25,6 @@ static_team_weight = {1: 0.876906824541861,
 
 static_home_weight = {True: 1.087651551,
                       False: 0.912348449}
-
-
-def update_overlords_projections(all_players):
-    url_overlord = "https://fantasyoverlord.com/FPL/DataWithForecasts"
-    with requests.Session() as s:
-        r = s.get(url_overlord, verify=False)
-
-        overlord_prediction = [x.split(",") for x in r.text.split("\n")]
-
-        for player in all_players:
-            for row in overlord_prediction[1:]:
-                if (player.name in row) and float(player.cost) == float(row[4]) / 100000:
-                    index = overlord_prediction[0].index('GW%sForecast' % str(player.next_gw))
-                    for n, _ in enumerate(player.opponent_schedule):
-                        player.overlord_expected_points_schedule.append(float(row[index + n]))
-                    break
-            else:
-                for n, _ in enumerate(player.opponent_schedule):
-                    player.overlord_expected_points_schedule.append(0)
-
-        return all_players
 
 
 def update_fpl_point_forecasts(all_players):
@@ -87,40 +67,6 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
                            player.selected_by
                            ])
 
-            elif prediction_model == "overlord":
-                io.append([player.name,
-                           player.team_name,
-                           int(player.position is "GK"),
-                           int(player.position is "DF"),
-                           int(player.position is "MF"),
-                           int(player.position is "FW"),
-                           player.cost / 10,
-                           player.overlord_expected_points_schedule[0],
-                           player.overlord_expected_points_schedule[1],
-                           player.overlord_expected_points_schedule[2],
-                           player.overlord_expected_points_schedule[3],
-                           player.overlord_expected_points_schedule[4]
-                           ])
-
-            elif prediction_model == "custom":
-
-                w1 = 0.25
-                w2 = 0.75
-
-                io.append([player.name,
-                           player.team_name,
-                           int(player.position is "GK"),
-                           int(player.position is "DF"),
-                           int(player.position is "MF"),
-                           int(player.position is "FW"),
-                           player.cost / 10,
-                           player.overlord_expected_points_schedule[0] * w1 + player.fpl_expected_points_schedule[0] * w2,
-                           player.overlord_expected_points_schedule[1] * w1 + player.fpl_expected_points_schedule[1] * w2,
-                           player.overlord_expected_points_schedule[2] * w1 + player.fpl_expected_points_schedule[2] * w2,
-                           player.overlord_expected_points_schedule[3] * w1 + player.fpl_expected_points_schedule[3] * w2,
-                           player.overlord_expected_points_schedule[4] * w1 + player.fpl_expected_points_schedule[4] * w2
-                           ])
-
             else:
                 io.append([player.name,
                            player.team_name,
@@ -143,6 +89,12 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
         myfile.close()
 
 
+def make_friends_file(frends):
+    pass
+
+
+
+
 if __name__ == "__main__":
     fixture_info = get_fixtures()
     team_info = get_teams()
@@ -151,15 +103,19 @@ if __name__ == "__main__":
     fixture_list, ishome_list = get_schedule_lists(team_info, fixture_info, gameweek_info)
     player_info_mod = get_player_schedules(player_info, fixture_list, ishome_list, gameweek_info)
     all_players = make_player_objects(player_info_mod, next_gw)
-
     update_fpl_point_forecasts(all_players)
-    update_overlords_projections(all_players)
 
     for p in all_players:
         p.print_info_basic()
-    for p in all_players:
-        p.print_forecasts()
 
     make_output_file(all_players, "fpl", selection_filter=5)
-    make_output_file(all_players, "overlord", selection_filter=5)
-    make_output_file(all_players, "custom", selection_filter=5)
+
+    friends = get_friends()
+    friends = friend_history(friends, next_gw, all_players)
+
+
+
+
+
+
+

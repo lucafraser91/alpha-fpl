@@ -32,24 +32,10 @@ class Player(object):
               "Pos:", Fore.GREEN, "{:<2}".format(self.position), Style.RESET_ALL,
               "Cost:", Fore.CYAN, "{:<3}".format(self.cost), Style.RESET_ALL,
               "selected:", Fore.BLUE, "{:<4}".format(self.selected_by), Style.RESET_ALL,
-              "expected points:", Fore.RED, "{:<4}".format(self.fpl_expected_points), Style.RESET_ALL,
-              "news:", Fore.YELLOW, "{:<15}".format(str(self.news)), Style.RESET_ALL
-              )
-
-    def print_forecasts(self):
-        print("Name:", Fore.GREEN, "{:<15}".format(self.name[:15]), Style.RESET_ALL,
-              "Team:", Fore.GREEN, "{:<15}".format(self.team_name[:15]), Style.RESET_ALL,
-              "Pos:", Fore.GREEN, "{:<2}".format(self.position), Style.RESET_ALL,
-              "Cost:", Fore.CYAN, "{:<3}".format(self.cost), Style.RESET_ALL,
-              "selected:", Fore.BLUE, "{:<4}".format(self.selected_by), Style.RESET_ALL,
-              "expected points:", Fore.RED, '{0:.2f}'.format(self.fpl_expected_points_schedule[0]),
-              Fore.MAGENTA, '{0:.2f}'.format(self.overlord_expected_points_schedule[0]), Style.RESET_ALL, '-',
-              Fore.RED, '{0:.2f}'.format(self.fpl_expected_points_schedule[1]),
-              Fore.MAGENTA, '{0:.2f}'.format(self.overlord_expected_points_schedule[1]), Style.RESET_ALL, '-',
-              Fore.RED, '{0:.2f}'.format(self.fpl_expected_points_schedule[2]),
-              Fore.MAGENTA, '{0:.2f}'.format(self.overlord_expected_points_schedule[2]), Style.RESET_ALL, '-',
-              Fore.RED, '{0:.2f}'.format(self.fpl_expected_points_schedule[3]),
-              Fore.MAGENTA, '{0:.2f}'.format(self.overlord_expected_points_schedule[3]), Style.RESET_ALL, '-',
-              Fore.RED, '{0:.2f}'.format(self.fpl_expected_points_schedule[4]),
-              Fore.MAGENTA, '{0:.2f}'.format(self.overlord_expected_points_schedule[4]), Style.RESET_ALL
+              "expected points:", Fore.YELLOW, "{:<4}".format(self.fpl_expected_points), Style.RESET_ALL,
+              Fore.YELLOW, '{0:.2f}'.format(self.fpl_expected_points_schedule[1]),
+              Fore.YELLOW, '{0:.2f}'.format(self.fpl_expected_points_schedule[2]),
+              Fore.YELLOW, '{0:.2f}'.format(self.fpl_expected_points_schedule[3]),
+              Fore.YELLOW, '{0:.2f}'.format(self.fpl_expected_points_schedule[4]), Style.RESET_ALL,
+              "news:", Fore.RED, "{:<15}".format(str(self.news)), Style.RESET_ALL,
               )
