@@ -34,7 +34,7 @@ position_lookup = {1: 'GK',
 def get_fixtures():
     url_fixtures = "https://fantasy.premierleague.com/drf/fixtures/"
     with requests.Session() as s:
-        r = s.get(url_fixtures)
+        r = s.get(url_fixtures, verify=False)
         fixtures = json.loads(r.text)
         return fixtures
 
@@ -42,7 +42,7 @@ def get_fixtures():
 def get_teams():
     url_teams = "https://fantasy.premierleague.com/drf/teams/"
     with requests.Session() as s:
-        r = s.get(url_teams)
+        r = s.get(url_teams, verify=False)
         teams = json.loads(r.text)
         return teams
 
@@ -50,7 +50,7 @@ def get_teams():
 def get_players():
     url_players = "https://fantasy.premierleague.com/drf/elements/"
     with requests.Session() as s:
-        r = s.get(url_players)
+        r = s.get(url_players, verify=False)
         players = json.loads(r.text)
         return players
 
@@ -58,7 +58,7 @@ def get_players():
 def get_gameweeks():
     url_gameweeks = "https://fantasy.premierleague.com/drf/events/"
     with requests.Session() as s:
-        r = s.get(url_gameweeks)
+        r = s.get(url_gameweeks, verify=False)
         gameweeks = json.loads(r.text)
 
     for gameweek in gameweeks:
@@ -66,6 +66,11 @@ def get_gameweeks():
             next_gw = gameweek['id']
         return gameweeks, next_gw
 
+def clean(input):
+    if input is None:
+        return '0'
+    else:
+        return input
 
 def get_schedule_lists(team_info, fixture_info, gameweek_info):
     fixture_list = {}
@@ -119,7 +124,7 @@ def make_player_objects(player_info_mod, next_gw):
                             next_gw,
                             player['opponent_schedule'],
                             player['ishome_schedule'],
-                            player['ep_next'],
+                            clean(player['ep_next']),
                             player['selected_by_percent'],
                             player['news'])
         all_players.append(new_player)

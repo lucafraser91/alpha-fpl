@@ -29,7 +29,7 @@ static_home_weight = {True: 1.087651551,
 def update_overlords_projections(all_players):
     url_overlord = "https://fantasyoverlord.com/FPL/DataWithForecasts"
     with requests.Session() as s:
-        r = s.get(url_overlord)
+        r = s.get(url_overlord, verify=False)
 
         overlord_prediction = [x.split(",") for x in r.text.split("\n")]
 
@@ -65,10 +65,10 @@ def update_fpl_point_forecasts(all_players):
 
 def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
     io = []
-    io.append(["Name", "Team", "GK", "DF", "MF", "FW", "Cost", "GW1", "GW2", "GW3", "GW4", "GW5"])
+    io.append(["Name", "Team", "GK", "DF", "MF", "FW", "Cost", "GW1", "GW2", "GW3", "GW4", "GW5","Next_Opponent", "News", "Selected"])
 
     for player in all_players:
-        if float(player.selected_by) >= float(selection_filter):
+        if float(player.selected_by) >= float(selection_filter) and player.name != "Sánchez":
             if prediction_model == "fpl":
                 io.append([player.name,
                            player.team_name,
@@ -81,7 +81,10 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
                            player.fpl_expected_points_schedule[1],
                            player.fpl_expected_points_schedule[2],
                            player.fpl_expected_points_schedule[3],
-                           player.fpl_expected_points_schedule[4]
+                           player.fpl_expected_points_schedule[4],
+                           team_name_lookup[player.opponent_schedule[0][0]],
+                           player.news,
+                           player.selected_by
                            ])
 
             elif prediction_model == "overlord":
@@ -153,8 +156,10 @@ if __name__ == "__main__":
     update_overlords_projections(all_players)
 
     for p in all_players:
+        p.print_info_basic()
+    for p in all_players:
         p.print_forecasts()
 
-    make_output_file(all_players, "fpl", selection_filter=2)
-    make_output_file(all_players, "overlord", selection_filter=2)
-    make_output_file(all_players, "custom", selection_filter=2)
+    make_output_file(all_players, "fpl", selection_filter=5)
+    make_output_file(all_players, "overlord", selection_filter=5)
+    make_output_file(all_players, "custom", selection_filter=5)
