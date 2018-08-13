@@ -79,42 +79,42 @@ def friend_history(friends, next_gw, all_players):
                         pick['element'] = p.name
                         pick['ep_next'] = p.fpl_expected_points
 
-
-
+    print("\n\n\n\n")
 
     for f in friends:
-        print("\n",Fore.GREEN, f['entry']['player_first_name'], f['entry']['player_last_name'],Style.RESET_ALL)
+        line = ''
+        line += '{:<27}'.format(Fore.GREEN+ f['entry']['player_first_name']+" "+ f['entry']['player_last_name']+Style.RESET_ALL)
 
-        line = "\n"
+
         for n, week in enumerate(f['picks']):
-            line += '{:<22}'.format("GW " + str(n+1))
-        print(line)
+            line += '{:<6}'.format("GW " + str(n+1))
 
-        line = Style.RESET_ALL
+
+        line += Style.RESET_ALL
         for n, week in enumerate(f['picks']):
             ep = 0
             for pick in range(15):
                 ep += round(float(week[pick]['ep_next']),1)
-            line += '{:<22}'.format("pts (): " + Fore.RED + str(f['history'][n]['points']) + Fore.LIGHTRED_EX + " (" +str(ep) + ")")
+            line += '{:<30}'.format("pts (exp): " + Fore.RED + str(f['history'][n]['points']) + Fore.LIGHTRED_EX + " (" +str(ep)[:4] + ")")
 
-        print(line)
+        #print(line)
 
-        line = Style.RESET_ALL
+        line += Style.RESET_ALL
         for n, week in enumerate(f['picks']):
-            line += '{:<22}'.format("total pts: " + Fore.GREEN + str(f['history'][n]['points']))
-        print(line)
+            line += '{:<20}'.format("total pts: " + Fore.GREEN + str(f['history'][n]['points']))
+        #print(line)
 
-        line = Style.RESET_ALL
+        line += Style.RESET_ALL
         for n, week in enumerate(f['picks']):
-            line += '{:<22}'.format("TV (bank): " + Fore.BLUE + str(f['history'][n]['value']/10) +
+            line += '{:<35}'.format("TV (bank): " + Fore.BLUE + str(f['history'][n]['value']/10) +
                                     Fore.LIGHTBLUE_EX + " (" + str(f['history'][n]['bank']/10) + ")")
-        print(line+"\n")
+        #print(line+"\n")
 
         for pick in range(15):
-            line = Fore.CYAN
+            line += Fore.CYAN
             for week in f['picks']:
                 line += '{:<22}'.format(week[pick]['element'])
-            print(line, Style.RESET_ALL)
+        print(line, Style.RESET_ALL)
 
     return friends
 
