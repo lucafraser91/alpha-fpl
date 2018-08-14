@@ -4,7 +4,7 @@ from colorama import Fore, Style
 class Player(object):
     def __init__(self, pid, name, element_type, cost, team, team_name, next_gw, opponent_schedule, ishome_schedule,
                  fpl_expected_points,
-                 selected_by, news):
+                 selected_by, news, pts_1, mins_1):
         self.pid = pid
         self.name = name
         self.position = element_type
@@ -24,7 +24,10 @@ class Player(object):
         self.news = news
 
         self.selected_by = selected_by
-        self.fpl_expected_points = fpl_expected_points
+        self.fpl_expected_points = float(fpl_expected_points) * min([1, float(mins_1)])
+
+        self.points_per_game = pts_1
+        self.mins_1 = mins_1
 
     def print_info_basic(self):
         print("Name:", Fore.GREEN, "{:<15}".format(self.name[:15]), Style.RESET_ALL,

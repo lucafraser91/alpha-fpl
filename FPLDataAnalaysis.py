@@ -29,7 +29,7 @@ static_home_weight = {True: 1.087651551,
 
 def update_fpl_point_forecasts(all_players):
     for player in all_players:
-        fpl_expected_next = player.fpl_expected_points
+        fpl_expected_next = float(player.fpl_expected_points)
         next_opponent = player.opponent_schedule[0][0]
         next_ishome = player.ishome_schedule[0][0]
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     for p in all_players:
         p.print_info_basic()
 
-    make_output_file(all_players, "fpl", selection_filter=5)
+    make_output_file(all_players, "fpl", selection_filter=3)
 
     friends = get_friends()
     friends = friend_history(friends, next_gw, all_players)

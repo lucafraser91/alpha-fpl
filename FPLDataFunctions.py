@@ -29,7 +29,7 @@ position_lookup = {1: 'GK',
                    3: 'MF',
                    4: 'FW'}
 
-verify = True
+verify = False
 
 
 def get_fixtures():
@@ -117,6 +117,7 @@ def friend_history(friends, next_gw, all_players):
         print(line, Style.RESET_ALL)
 
     return friends
+
 
 def get_players():
     url_fixtures = "https://fantasy.premierleague.com/drf/elements/"
@@ -215,7 +216,9 @@ def make_player_objects(player_info_mod, next_gw):
                             player['ishome_schedule'],
                             clean(player['ep_next']),
                             player['selected_by_percent'],
-                            player['news'])
+                            player['news'],
+                            player['points_per_game'],
+                            player['minutes'])
         all_players.append(new_player)
     all_players.sort(key=lambda x: x.fpl_expected_points, reverse=True)
 
