@@ -78,6 +78,7 @@ def friend_history(friends, next_gw, all_players):
                     if pick['element'] == p.pid:
                         pick['element'] = p.name
                         pick['ep_next'] = p.fpl_expected_points
+                        break
 
     print("\n\n\n\n")
 

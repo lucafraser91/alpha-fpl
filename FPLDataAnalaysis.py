@@ -1,4 +1,5 @@
 from FPLDataFunctions import *
+import numpy as np
 from colorama import Fore, Style
 
 static_team_weight = {1: 0.876906824541861,
@@ -45,7 +46,8 @@ def update_fpl_point_forecasts(all_players):
 
 def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
     io = []
-    io.append(["Name", "Team", "GK", "DF", "MF", "FW", "Cost", "GW1", "GW2", "GW3", "GW4", "GW5","Next_Opponent", "News", "Selected"])
+    io.append(["Name", "Team", "GK", "DF", "MF", "FW", "Cost", "GW1", "GW2", "GW3", "GW4", "GW5", "Next_Opponent1",
+               "Next_Opponent2", "Next_Opponent3", "Next_Opponent4", "Next_Opponent5", "News", "Selected"])
 
     for player in all_players:
         if float(player.selected_by) >= float(selection_filter) and player.name != "Sánchez":
@@ -62,7 +64,11 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
                            player.fpl_expected_points_schedule[2],
                            player.fpl_expected_points_schedule[3],
                            player.fpl_expected_points_schedule[4],
-                           team_name_lookup[player.opponent_schedule[0][0]],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[0][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[1][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[2][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[3][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[4][:]])[2:-2],
                            player.news,
                            player.selected_by
                            ])
@@ -89,10 +95,24 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
         myfile.close()
 
 
-def make_friends_file(frends):
-    pass
+def make_friends_file(friends):
+    matrix = np.zeros([len(friends), len(friends)])
 
+    for x, f1 in enumerate(friends):
+        for y, f2 in enumerate(friends):
+            n1, n2 = 0, 0
+            for n in range(15):
+                n1 += f1['picks'][-1][n]['ep_next']
+                n2 += f2['picks'][-1][n]['ep_next']
 
+            n = max([n1, n2])
+            for p1 in range(15):
+                for p2 in range(15):
+                    if f1['picks'][-1][p1]['element'] == f2['picks'][-1][p2]['element']:
+                        if f1['picks'][-1][p1]['ep_next'] == f2['picks'][-1][p2]['ep_next']:
+                            matrix[x, y] = matrix[x, y] + f1['picks'][-1][p1]['ep_next'] / n
+
+    return matrix
 
 
 if __name__ == "__main__":
@@ -112,10 +132,4 @@ if __name__ == "__main__":
 
     friends = get_friends()
     friends = friend_history(friends, next_gw, all_players)
-
-
-
-
-
-
-
+    make_friends_file(friends)
