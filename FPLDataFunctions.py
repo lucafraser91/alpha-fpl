@@ -83,39 +83,36 @@ def friend_history(friends, next_gw, all_players):
     print("\n\n\n\n")
 
     for f in friends:
-        line = ''
+        line = '\n'
         line += '{:<27}'.format(Fore.GREEN+ f['entry']['player_first_name']+" "+ f['entry']['player_last_name']+Style.RESET_ALL)
-
+        print(line, Style.RESET_ALL)
 
         for n, week in enumerate(f['picks']):
-            line += '{:<6}'.format("GW " + str(n+1))
+            line = '{:<6}'.format("GW " + str(n+1))
 
 
-        line += Style.RESET_ALL
-        for n, week in enumerate(f['picks']):
+            line += Style.RESET_ALL
+
             ep = 0
             for pick in range(15):
                 ep += round(float(week[pick]['ep_next']),1)
             line += '{:<30}'.format("pts (exp): " + Fore.RED + str(f['history'][n]['points']) + Fore.LIGHTRED_EX + " (" +str(ep)[:4] + ")")
 
-        #print(line)
+            line += Style.RESET_ALL
 
-        line += Style.RESET_ALL
-        for n, week in enumerate(f['picks']):
             line += '{:<20}'.format("total pts: " + Fore.GREEN + str(f['history'][n]['points']))
-        #print(line)
 
-        line += Style.RESET_ALL
-        for n, week in enumerate(f['picks']):
+
+            line += Style.RESET_ALL
+
             line += '{:<35}'.format("TV (bank): " + Fore.BLUE + str(f['history'][n]['value']/10) +
                                     Fore.LIGHTBLUE_EX + " (" + str(f['history'][n]['bank']/10) + ")")
-        #print(line+"\n")
 
-        for pick in range(15):
-            line += Fore.CYAN
-            for week in f['picks']:
-                line += '{:<22}'.format(week[pick]['element'])
-        print(line, Style.RESET_ALL)
+
+            for pick in range(15):
+                line += Fore.CYAN
+                line += '{:<22}'.format(f['picks'][n][pick]['element'])
+            print(line, Style.RESET_ALL)
 
     return friends
 
@@ -196,7 +193,7 @@ def get_player_schedules(player_info, fixture_list, ishome_list, gameweek_info):
         player_info[n]['ishome_schedule'] = []
 
         for gameweek in gameweek_info:
-            if (not gameweek['finished']) or (not gameweek['is_current']):
+            if not gameweek['finished']:
                 player_info[n]['opponent_schedule'].append(fixture_list[player['team']][gameweek['id']])
                 player_info[n]['ishome_schedule'].append(ishome_list[player['team']][gameweek['id']])
 

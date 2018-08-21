@@ -1,6 +1,10 @@
 from FPLDataFunctions import *
 import numpy as np
+import pandas as pd
 from colorama import Fore, Style
+import matplotlib
+from scipy.stats import rankdata
+import matplotlib.pyplot as plt
 
 static_team_weight = {1: 0.876906824541861,
                       2: 1.07534128246658,
@@ -30,7 +34,7 @@ static_home_weight = {True: 1.087651551,
 
 def update_fpl_point_forecasts(all_players):
     for player in all_players:
-        fpl_expected_next = float(player.fpl_expected_points)
+        fpl_expected_next = (1 * min([1, float(player.mins_1)])) + 0.25*float(player.fpl_expected_points)  # TODO change back to 'float(player.fpl_expected_points)'
         next_opponent = player.opponent_schedule[0][0]
         next_ishome = player.ishome_schedule[0][0]
 
@@ -115,6 +119,58 @@ def make_friends_file(friends):
     return matrix
 
 
+def rank_chance(friends):
+    weekly_average_pts = []
+    for n, w in enumerate(friends[-1]['history']):
+        weekly_average_pts.append(0)
+        for f in friends:
+            weekly_average_pts[-1] += float(f['history'][n]['points']) / len(friends)
+
+    point_samples = []
+    for n, w in enumerate(friends[-1]['history']):
+        for f in friends:
+            point_samples.append(float(f['history'][n]['points']) - weekly_average_pts[n])
+
+    sigma = np.std(point_samples)
+    num_bins = 20
+    fig, ax = plt.subplots()
+    n, bins, patches = ax.hist(point_samples, num_bins, density=1)
+    y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
+         np.exp(-0.5 * (1 / sigma * (bins - 0)) ** 2))
+    ax.plot(bins, y, '--')
+    ax.set_xlabel('weekly pts')
+    ax.set_ylabel('Probability density')
+    ax.set_title(r'Histogram of weekly pts: $\mu=0$, $\sigma=%ss$' % int(sigma))
+    fig.tight_layout()
+    plt.show()
+
+    n_sim = 50000
+    start = [p['history'][-1]['total_points'] for p in friends]
+    weeks_to_ny = 21 - len(friends[-1]['history'])
+    weeks_to_end = 38 - len(friends[-1]['history'])
+
+    ny_sims = np.array(
+        [[st + np.random.normal(0, sigma) * (weeks_to_ny ** 0.5) for sim in range(n_sim)] for st in start])
+    ye_sims = np.array(
+        [[st + np.random.normal(0, sigma) * (weeks_to_end ** 0.5) for sim in range(n_sim)] for st in start])
+
+    ny_sims = np.array([(rankdata(ny_sims[:, sim], 'ordinal')).astype(int) for sim in range(n_sim)])
+    ye_sims = np.array([(rankdata(ye_sims[:, sim], 'ordinal')).astype(int) for sim in range(n_sim)])
+
+    ny_prob = pd.DataFrame([[np.count_nonzero(ny_sims[:, n] == rank) / n_sim for n, f in enumerate(friends)] for rank in
+                            [1, 2, 3, 4, 5, 6, 7]],
+                           index=[f['entry']['player_last_name'] for f in friends],
+                           columns=["7th", "6th", "5th", "4th", "3rd", "2nd", "1st"]).iloc[:, ::-1]
+    ye_prob = pd.DataFrame([[np.count_nonzero(ye_sims[:, n] == rank) / n_sim for n, f in enumerate(friends)] for rank in
+                            [1, 2, 3, 4, 5, 6, 7]],
+                           index=[f['entry']['player_last_name'] for f in friends],
+                           columns=["7th", "6th", "5th", "4th", "3rd", "2nd", "1st"]).iloc[:, ::-1]
+
+    return ny_prob, ye_prob
+
+
+#ans = rank_chance(friends)
+
 if __name__ == "__main__":
     fixture_info = get_fixtures()
     team_info = get_teams()
@@ -133,3 +189,6 @@ if __name__ == "__main__":
     friends = get_friends()
     friends = friend_history(friends, next_gw, all_players)
     make_friends_file(friends)
+    ny, ye = rank_chance(friends)
+    print(ny)
+    print(ye)
