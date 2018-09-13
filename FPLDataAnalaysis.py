@@ -4,7 +4,10 @@ import pandas as pd
 from colorama import Fore, Style
 import matplotlib
 from scipy.stats import rankdata
+import seaborn as sns
 import matplotlib.pyplot as plt
+
+
 
 static_team_weight = {1: 0.876906824541861,
                       2: 1.07534128246658,
@@ -34,7 +37,9 @@ static_home_weight = {True: 1.087651551,
 
 def update_fpl_point_forecasts(all_players):
     for player in all_players:
-        fpl_expected_next = (1 * min([1, float(player.mins_1)])) + 0.25*float(player.fpl_expected_points)  # TODO change back to 'float(player.fpl_expected_points)'
+        fpl_expected_next = 1*float(player.fpl_expected_points)  # TODO change back to 'float(player.fpl_expected_points)'
+        # (1 * min([1, float(player.mins_1)])) + 0.25*float(player.fpl_expected_points)
+
         next_opponent = player.opponent_schedule[0][0]
         next_ishome = player.ishome_schedule[0][0]
 
@@ -47,6 +52,9 @@ def update_fpl_point_forecasts(all_players):
                 player.fpl_expected_points_schedule[-1] += \
                     fpl_normalised_expected * static_team_weight[opponet_fixture] * static_home_weight[ishome_fixture]
 
+
+def update_point_forecasts(all_players):
+    pass
 
 def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
     io = []
@@ -166,7 +174,28 @@ def rank_chance(friends):
                            index=[f['entry']['player_last_name'] for f in friends],
                            columns=["7th", "6th", "5th", "4th", "3rd", "2nd", "1st"]).iloc[:, ::-1]
 
+    plt.pcolor(ny_prob, vmin=0, vmax=1, cmap='nipy_spectral')
+    plt.title("NY rank")
+    plt.yticks(np.arange(0.5, len(ny_prob.index), 1), ny_prob.index)
+    plt.xticks(np.arange(0.5, len(ny_prob.columns), 1), ny_prob.columns)
+    plt.colorbar()
+    plt.tight_layout()
+    plt.show()
+    plt.clf()
+
+    plt.pcolor(ye_prob, vmin=0, vmax=1, cmap='nipy_spectral')
+    plt.title("YE rank")
+    plt.yticks(np.arange(0.5, len(ye_prob.index), 1), ye_prob.index)
+    plt.xticks(np.arange(0.5, len(ye_prob.columns), 1), ye_prob.columns)
+    plt.colorbar()
+    plt.tight_layout()
+    plt.show()
+
+
+
     return ny_prob, ye_prob
+
+
 
 
 #ans = rank_chance(friends)
@@ -180,6 +209,7 @@ if __name__ == "__main__":
     player_info_mod = get_player_schedules(player_info, fixture_list, ishome_list, gameweek_info)
     all_players = make_player_objects(player_info_mod, next_gw)
     update_fpl_point_forecasts(all_players)
+    update_point_forecasts(all_players)
 
     for p in all_players:
         p.print_info_basic()
