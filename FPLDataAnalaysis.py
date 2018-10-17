@@ -54,7 +54,33 @@ def update_fpl_point_forecasts(all_players):
 
 
 def update_point_forecasts(all_players):
-    pass
+    for player in all_players:
+        norm_pts = []
+        for (opponet, ishome, points, time_on) in zip(player.opponent_past_schedule,
+                                                      player.ishome_past_schedule,
+                                                      player.points_past_schedule,
+                                                      player.mins_played_past):
+
+
+
+
+            if float(time_on) > 1:
+                norm_pts.append(points / static_team_weight[opponet] / static_home_weight[ishome])
+
+
+        # Normalised expected based on regresion of last 5 GW vs achual, for 16/17 season. ep = 1 + 0.5*average(5)
+        normalised_ev = 1 + 0.5*np.mean(norm_pts[-5:])
+
+        for (opponet, ishome) in zip(player.opponent_schedule, player.ishome_schedule):
+            player.expected_points_schedule.append(0)
+            for (opponet_fixture, ishome_fixture) in zip(opponet, ishome):
+                player.expected_points_schedule[-1] += \
+                    normalised_ev * static_team_weight[opponet_fixture] * static_home_weight[ishome_fixture]
+
+
+
+
+
 
 def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
     io = []
@@ -85,7 +111,7 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
                            player.selected_by
                            ])
 
-            else:
+            elif prediction_model == "custom":
                 io.append([player.name,
                            player.team_name,
                            int(player.position is "GK"),
@@ -93,11 +119,18 @@ def make_output_file(all_players, prediction_model="fpl", selection_filter=0):
                            int(player.position is "MF"),
                            int(player.position is "FW"),
                            player.cost / 10,
-                           "select prediction model",
-                           "select prediction model",
-                           "select prediction model",
-                           "select prediction model",
-                           "select prediction model"
+                           player.expected_points_schedule[0],
+                           player.expected_points_schedule[1],
+                           player.expected_points_schedule[2],
+                           player.expected_points_schedule[3],
+                           player.expected_points_schedule[4],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[0][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[1][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[2][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[3][:]])[2:-2],
+                           str([team_name_lookup[pl] for pl in player.opponent_schedule[4][:]])[2:-2],
+                           player.news,
+                           player.selected_by
                            ])
 
     with open("FLP_Data_" + prediction_model + ".txt", "w") as myfile:
@@ -198,8 +231,6 @@ def rank_chance(friends):
 
 
 
-#ans = rank_chance(friends)
-
 if __name__ == "__main__":
     fixture_info = get_fixtures()
     team_info = get_teams()
@@ -207,13 +238,16 @@ if __name__ == "__main__":
     gameweek_info, next_gw = get_gameweeks()
     fixture_list, ishome_list = get_schedule_lists(team_info, fixture_info, gameweek_info)
     player_info_mod = get_player_schedules(player_info, fixture_list, ishome_list, gameweek_info)
+
     all_players = make_player_objects(player_info_mod, next_gw)
     update_fpl_point_forecasts(all_players)
     update_point_forecasts(all_players)
 
-    for p in all_players:
-        p.print_info_basic()
 
+    for p in all_players:
+        p.print_info_basic2()
+
+    make_output_file(all_players, "custom", selection_filter=3)
     make_output_file(all_players, "fpl", selection_filter=3)
 
     friends = get_friends()

@@ -140,6 +140,12 @@ def get_player(entry_id):
         players = json.loads(r.text)
         return players
 
+def get_one_player(pid):
+    url_players = "https://fantasy.premierleague.com/drf/element-summary/" + str(pid)
+    with requests.Session() as s:
+        r = s.get(url_players, verify=verify)
+        players = json.loads(r.text)
+        return players
 
 def get_gameweeks():
     url_gameweeks = "https://fantasy.premierleague.com/drf/events/"
@@ -191,11 +197,28 @@ def get_player_schedules(player_info, fixture_list, ishome_list, gameweek_info):
     for n, player in enumerate(player_info[:]):
         player_info[n]['opponent_schedule'] = []
         player_info[n]['ishome_schedule'] = []
+        player_info[n]['opponent_past_schedule'] = []
+        player_info[n]['ishome_past_schedule'] = []
+        player_info[n]['points_past_schedule'] = []
+        player_info[n]['mins_played_past'] = []
+
+        info = get_one_player(player['id'])
 
         for gameweek in gameweek_info:
             if not gameweek['finished']:
                 player_info[n]['opponent_schedule'].append(fixture_list[player['team']][gameweek['id']])
                 player_info[n]['ishome_schedule'].append(ishome_list[player['team']][gameweek['id']])
+            else:
+                try:
+                    player_info[n]['opponent_past_schedule'].append(info['history'][gameweek['id']-1]['opponent_team'])
+                    player_info[n]['ishome_past_schedule'].append(info['history'][gameweek['id']-1]['was_home'])
+                    player_info[n]['points_past_schedule'].append(info['history'][gameweek['id']-1]['total_points'])
+                    player_info[n]['mins_played_past'].append(info['history'][gameweek['id']-1]['minutes'])
+                except IndexError:
+                    player_info[n]['opponent_past_schedule'].append(0)
+                    player_info[n]['ishome_past_schedule'].append(0)
+                    player_info[n]['points_past_schedule'].append(0)
+                    player_info[n]['mins_played_past'].append(0)
 
     return player_info
 
@@ -212,11 +235,17 @@ def make_player_objects(player_info_mod, next_gw):
                             next_gw,
                             player['opponent_schedule'],
                             player['ishome_schedule'],
+
                             clean(player['ep_next']),
                             player['selected_by_percent'],
                             player['news'],
                             player['points_per_game'],
-                            player['minutes'])
+                            player['minutes'],
+                            player['opponent_past_schedule'],
+                            player['ishome_past_schedule'],
+                            player['points_past_schedule'],
+                            player['mins_played_past'],
+                            )
         all_players.append(new_player)
     all_players.sort(key=lambda x: x.fpl_expected_points, reverse=True)
 
